@@ -858,8 +858,9 @@ MaybeError CommandBuffer::ExecuteRenderPass(BeginRenderPassCmd* renderPass) {
         // at Framebuffer build time (or maybe CommandBuffer build time) so they don't have to
         // be created and destroyed at draw time.
         gl.GenFramebuffers(1, &fbo);
-        if (renderPass->colorAttachments[0].view.Get() != nullptr) {
-            dawn::native::opengl::TextureView* tv = (dawn::native::opengl::TextureView*)renderPass->colorAttachments[0].view.Get();
+        ColorAttachmentIndex index0(uint8_t(0));
+        if (renderPass->colorAttachments[index0].view.Get() != nullptr) {
+            dawn::native::opengl::TextureView* tv = (dawn::native::opengl::TextureView*)renderPass->colorAttachments[index0].view.Get();
             if (tv->GetHandle() != 0xffffffff) { // swapchain texture
                 gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);  // bugfix: comment for desktop mac/win
             }

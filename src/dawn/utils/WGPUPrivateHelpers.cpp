@@ -17,7 +17,7 @@
 #include "dawn/utils/WGPUAppleHelpers.h"
 
 #include "../../../third_party/vulkan-deps/glslang/src/glslang/Include/glslang_c_interface.h"
-#include "../../../third_party/vulkan-deps/glslang/src/StandAlone/ResourceLimits.h"
+#include "../../../third_party/vulkan-deps/glslang/src/glslang/Public/ResourceLimits.h"
 //#include "../../../third_party/vulkan-deps/glslang/src/glslang/Public/ShaderLang.h"
 #include "dawn/native/dawn_platform.h"
 #include "dawn/dawn_proc.h"
@@ -86,7 +86,7 @@ std::vector<uint32_t> compileShaderToSPIRV_Vulkan(glslang_stage_t stage, const c
         .force_default_version_and_profile = false,
         .forward_compatible = false,
         .messages = GLSLANG_MSG_DEFAULT_BIT,
-        .resource = reinterpret_cast<const glslang_resource_t*>(&glslang::DefaultTBuiltInResource),
+        .resource = reinterpret_cast<const glslang_resource_t*>(GetDefaultResources()),
     };
 
     glslang_shader_t* shader = glslang_shader_create(&input);
