@@ -120,7 +120,7 @@ struct hash<tint::type::Node> {
         if (const auto* ac = type.As<tint::type::ArrayCount>()) {
             return ac->Hash();
         } else if (type.Is<tint::type::StructMember>()) {
-            return tint::TypeInfo::Of<tint::type::StructMember>().full_hashcode;
+            return static_cast<size_t>(tint::TypeInfo::Of<tint::type::StructMember>().full_hashcode);
         }
         TINT_ASSERT(Type, false && "Unreachable");
         return 0;

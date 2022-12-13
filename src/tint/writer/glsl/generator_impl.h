@@ -79,7 +79,7 @@ class GeneratorImpl : public TextGenerator {
     /// Constructor
     /// @param program the program to generate
     /// @param version the GLSL version to use
-    GeneratorImpl(const Program* program, const Version& version, const ShaderStage& stage);
+    GeneratorImpl(const Program* program, const Version& version, const ShaderStage& stage = ShaderStage::Compute);
     ~GeneratorImpl();
 
     /// @returns true on successful generation; false otherwise

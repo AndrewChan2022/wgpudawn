@@ -110,7 +110,7 @@ enum class ShaderStage { Vertex, Fragment, Compute };
 /// @param options the configuration options to use when generating GLSL
 /// @param entry_point the entry point to generate GLSL for
 /// @returns the resulting GLSL and supplementary information
-Result Generate(const Program* program, const Options& options, const std::string& entry_point, ShaderStage stage);
+Result Generate(const Program* program, const Options& options, const std::string& entry_point, ShaderStage stage = ShaderStage::Compute);
 
 }  // namespace tint::writer::glsl
 

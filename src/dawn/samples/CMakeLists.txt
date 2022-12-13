@@ -37,6 +37,30 @@ if (CMAKE_SYSTEM_NAME STREQUAL iOS)
         glslang
     )
     add_subdirectory(Ch7WGPUTriangle)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Android)
+
+    add_library(dawn_sample_utils STATIC ${DAWN_PLACEHOLDER_FILE})
+    common_compile_options(dawn_sample_utils)
+    target_sources(dawn_sample_utils PRIVATE
+        "SampleUtils_ios.cpp"
+    )
+    target_link_libraries(dawn_sample_utils PUBLIC
+        dawn_internal_config
+        dawncpp
+        dawn_proc
+        dawn_common
+        dawn_native
+        dawn_wire
+        dawn_utils
+
+        OSDependent
+        SPIRV
+        MachineIndependent
+        GenericCodeGen
+        glslang-default-resource-limits
+        OGLCompiler
+        glslang
+    )
 else()
 
 add_library(dawn_sample_utils STATIC ${DAWN_PLACEHOLDER_FILE})
