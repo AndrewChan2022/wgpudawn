@@ -105,7 +105,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
     choose ios_demo wgputriangle
     choose scheme release and build
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh xcodegl iOS
 
@@ -116,7 +116,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
 
     make -j16
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh xcodegl iOS
 
@@ -127,7 +127,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
 
     ninja -j16
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh xcodegl iOS
 
@@ -149,7 +149,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
 
     make -j16
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh xcodeandroid Android32
 
@@ -167,7 +167,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
 
     make -j16
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh xcodeandroid Android64
 
@@ -178,7 +178,7 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
     cmake ../.. -DCMAKE_BUILD_TYPE=Release -DONLY_GL=1
     make -j16
 
-    # collection and merge libs
+    # collection header and libs then merge libs
     cd ../buildresult
     ./collection.sh out/Release Windows
     or
