@@ -73,21 +73,20 @@ namespace utils {
 
 std::vector<uint32_t> compileShaderToSPIRV_Vulkan(glslang_stage_t stage, const char* shaderSource, const char* fileName)
 {
-    const glslang_input_t input = {
-        .language = GLSLANG_SOURCE_GLSL,
-        .stage = stage,
-        .client = GLSLANG_CLIENT_VULKAN,
-        .client_version = GLSLANG_TARGET_VULKAN_1_1,
-        .target_language = GLSLANG_TARGET_SPV,
-        .target_language_version = GLSLANG_TARGET_SPV_1_3,
-        .code = shaderSource,
-        .default_version = 100,
-        .default_profile = GLSLANG_NO_PROFILE,
-        .force_default_version_and_profile = false,
-        .forward_compatible = false,
-        .messages = GLSLANG_MSG_DEFAULT_BIT,
-        .resource = reinterpret_cast<const glslang_resource_t*>(GetDefaultResources()),
-    };
+    glslang_input_t input;
+    input.language = GLSLANG_SOURCE_GLSL;
+    input.stage = stage;
+    input.client = GLSLANG_CLIENT_VULKAN;
+    input.client_version = GLSLANG_TARGET_VULKAN_1_1;
+    input.target_language = GLSLANG_TARGET_SPV;
+    input.target_language_version = GLSLANG_TARGET_SPV_1_3;
+    input.code = shaderSource;
+    input.default_version = 100;
+    input.default_profile = GLSLANG_NO_PROFILE;
+    input.force_default_version_and_profile = false;
+    input.forward_compatible = false;
+    input.messages = GLSLANG_MSG_DEFAULT_BIT;
+    input.resource = reinterpret_cast<const glslang_resource_t*>(GetDefaultResources());
 
     glslang_shader_t* shader = glslang_shader_create(&input);
 
@@ -208,6 +207,8 @@ bool WGPUInitWithGetProc(void* getproc) {
     // use dawn::native
     DawnProcTable backendProcs = dawn::native::GetProcs();
     dawnProcSetProcs(&backendProcs);
+
+    return true;
 }
 
 bool WGPUSetLogCallback(WGPUDevice cDevice, WGPUErrorCallback defaultCallback) {
@@ -217,6 +218,7 @@ bool WGPUSetLogCallback(WGPUDevice cDevice, WGPUErrorCallback defaultCallback) {
     } else {
         backendProcs.deviceSetUncapturedErrorCallback(cDevice, PrintDeviceError, nullptr);
     }
+    return true;
 }
 
 }  // namespace utils
