@@ -44,6 +44,7 @@
 /buildresult/include
 /buildresult/raw
 /buildresult/merged
+/src/dawn/samples/Ch7WGPUTriangle/build
 
 # Tint test validation cache file
 /test/tint/validation.cache
