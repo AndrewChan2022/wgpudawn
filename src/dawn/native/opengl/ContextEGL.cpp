@@ -23,6 +23,9 @@ namespace dawn::native::opengl {
 
 ResultOrError<std::unique_ptr<ContextEGL>> ContextEGL::Create(const EGLFunctions& egl,
                                                               EGLenum api) {
+    
+    return std::unique_ptr<ContextEGL>(new ContextEGL(egl, nullptr, nullptr));
+    
     EGLDisplay display = egl.GetCurrentDisplay();
 
     if (display == EGL_NO_DISPLAY) {
@@ -84,11 +87,16 @@ ResultOrError<std::unique_ptr<ContextEGL>> ContextEGL::Create(const EGLFunctions
 }
 
 void ContextEGL::MakeCurrent() {
-    egl.MakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mContext);
+    static int s_count = 0;
+    s_count++;
+    if (s_count < 10) {
+        printf("MakeCurrent\n");
+    }
+    //egl.MakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mContext);
 }
 
 ContextEGL::~ContextEGL() {
-    egl.DestroyContext(mDisplay, mContext);
+    //egl.DestroyContext(mDisplay, mContext);
 }
 
 }  // namespace dawn::native::opengl

@@ -348,9 +348,12 @@ void NewSwapChainBase::APIPresent() {
         return;
     }
 
+#if DAWN_PLATFORM_IS(MACOS) || DAWN_PLATFORM_IS(WINDOWS)
+#else
     ASSERT(mCurrentTextureView->GetTexture()->GetTextureState() ==
            TextureBase::TextureState::Destroyed);
     mCurrentTextureView = nullptr;
+#endif
 }
 
 uint32_t NewSwapChainBase::GetWidth() const {

@@ -33,7 +33,7 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(dawn_glfw PRIVATE "WGPU_SHARED_LIBRARY")
 endif()
 
-if (DAWN_ENABLE_METAL)
+if (DAWN_ENABLE_METAL OR APPLE)
     target_link_libraries(dawn_glfw PRIVATE "-framework Metal")
     target_sources(dawn_glfw PRIVATE
         "utils_metal.mm"

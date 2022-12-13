@@ -33,9 +33,17 @@ target_sources(dawn_utils PRIVATE
     "Timer.h"
     "WGPUHelpers.cpp"
     "WGPUHelpers.h"
+    "WGPUPrivateHelpers.cpp"
+    "WGPUPrivateHelpers.h"
     "WireHelper.cpp"
     "WireHelper.h"
 )
+if (APPLE)
+    target_sources(dawn_utils PRIVATE
+        "WGPUAppleHelpers.mm"
+        "WGPUAppleHelpers.h"
+    )
+endif()
 target_link_libraries(dawn_utils
     PUBLIC dawncpp_headers
     PRIVATE dawn_internal_config

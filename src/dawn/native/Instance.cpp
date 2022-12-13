@@ -259,11 +259,11 @@ ResultOrError<Ref<AdapterBase>> InstanceBase::RequestAdapterInternal(
     if (integratedGPUAdapterIndex) {
         return mAdapters[*integratedGPUAdapterIndex];
     }
-    if (cpuAdapterIndex) {
-        return mAdapters[*cpuAdapterIndex];
-    }
     if (unknownAdapterIndex) {
         return mAdapters[*unknownAdapterIndex];
+    }
+    if (cpuAdapterIndex) {
+        return mAdapters[*cpuAdapterIndex];
     }
 
     return Ref<AdapterBase>(nullptr);
@@ -496,9 +496,11 @@ const XlibXcbFunctions* InstanceBase::GetOrCreateXlibXcbFunctions() {
 }
 
 Surface* InstanceBase::APICreateSurface(const SurfaceDescriptor* descriptor) {
+#if !defined(DAWN_ENABLE_BACKEND_OPENGLES) && !defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
     if (ConsumedError(ValidateSurfaceDescriptor(this, descriptor))) {
         return Surface::MakeError(this);
     }
+#endif
 
     return new Surface(this, descriptor);
 }

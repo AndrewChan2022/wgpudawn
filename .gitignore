@@ -39,6 +39,11 @@
 /tools/golang
 /tools/memory
 /out
+/xcode*
+/vs*
+/buildresult/include
+/buildresult/raw
+/buildresult/merged
 
 # Tint test validation cache file
 /test/tint/validation.cache

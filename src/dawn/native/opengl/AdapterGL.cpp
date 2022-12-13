@@ -58,7 +58,7 @@ Adapter::Adapter(InstanceBase* instance, wgpu::BackendType backendType)
 
 MaybeError Adapter::InitializeGLFunctions(void* (*getProc)(const char*)) {
     // Use getProc to populate the dispatch table
-    mEGLFunctions.Init(getProc);
+    //mEGLFunctions.Init(getProc);
     return mFunctions.Initialize(getProc);
 }
 

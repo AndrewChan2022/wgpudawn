@@ -22,6 +22,7 @@
 #include "dawn/common/Constants.h"
 #include "dawn/utils/TextureUtils.h"
 #include "dawn/webgpu_cpp.h"
+#include "dawn/utils/WGPUPrivateHelpers.h"
 
 namespace utils {
 

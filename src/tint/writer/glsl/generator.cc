@@ -28,7 +28,7 @@ Result::Result() = default;
 Result::~Result() = default;
 Result::Result(const Result&) = default;
 
-Result Generate(const Program* program, const Options& options, const std::string& entry_point) {
+Result Generate(const Program* program, const Options& options, const std::string& entry_point, ShaderStage stage) {
     Result result;
     if (!program->IsValid()) {
         result.error = "input program is not valid";
@@ -44,7 +44,7 @@ Result Generate(const Program* program, const Options& options, const std::strin
     }
 
     // Generate the GLSL code.
-    auto impl = std::make_unique<GeneratorImpl>(&sanitized_result.program, options.version);
+    auto impl = std::make_unique<GeneratorImpl>(&sanitized_result.program, options.version, stage);
     result.success = impl->Generate();
     result.error = impl->error();
     result.glsl = impl->result();

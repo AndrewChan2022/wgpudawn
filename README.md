@@ -1,5 +1,8 @@
 ![Dawn's logo: a sun rising behind a stylized mountain inspired by the WebGPU logo. The text "Dawn" is written below it.](docs/imgs/dawn_logo.png "Dawn's logo")
 
+# build guide
+[build guide](./build.md)
+
 # Dawn, a WebGPU implementation
 
 Dawn is an open-source and cross-platform implementation of the work-in-progress [WebGPU](https://webgpu.dev) standard.

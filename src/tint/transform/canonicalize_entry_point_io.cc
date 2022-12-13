@@ -641,14 +641,16 @@ struct CanonicalizeEntryPointIO::State {
 
         if (cfg.shader_style == ShaderStyle::kGlsl &&
             func_ast->PipelineStage() == ast::PipelineStage::kVertex) {
-            auto* pos_y = GLPosition("y");
-            auto* negate_pos_y =
-                ctx.dst->create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, GLPosition("y"));
-            wrapper_body.Push(ctx.dst->Assign(pos_y, negate_pos_y));
-
-            auto* two_z = ctx.dst->Mul(ctx.dst->Expr(2_f), GLPosition("z"));
-            auto* fixed_z = ctx.dst->Sub(two_z, GLPosition("w"));
-            wrapper_body.Push(ctx.dst->Assign(GLPosition("z"), fixed_z));
+            
+            // bugfix: ndc
+//            auto* pos_y = GLPosition("y");
+//            auto* negate_pos_y =
+//                ctx.dst->create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, GLPosition("y"));
+//            wrapper_body.Push(ctx.dst->Assign(pos_y, negate_pos_y));
+//
+//            auto* two_z = ctx.dst->Mul(ctx.dst->Expr(2_f), GLPosition("z"));
+//            auto* fixed_z = ctx.dst->Sub(two_z, GLPosition("w"));
+//            wrapper_body.Push(ctx.dst->Assign(GLPosition("z"), fixed_z));
         }
 
         // Create the wrapper entry point function.

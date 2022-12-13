@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !defined(DAWN_ENABLE_BACKEND_METAL)
-#error "utils_metal.mm requires the Metal backend to be enabled."
+//#error "utils_metal.mm requires the Metal backend to be enabled."
 #endif  // !defined(DAWN_ENABLE_BACKEND_METAL)
 
 #include "webgpu/webgpu_glfw.h"
@@ -45,5 +45,16 @@ std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptorCocoa(GLF
     desc->layer = [view layer];
     return std::move(desc);
 }
+
+std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptorCocoaGL(GLFWwindow* window) {
+    NSWindow* nsWindow = glfwGetCocoaWindow(window);
+    NSView* view = [nsWindow contentView];
+    
+    std::unique_ptr<wgpu::SurfaceDescriptorFromMetalLayer> desc =
+        std::make_unique<wgpu::SurfaceDescriptorFromMetalLayer>();
+    desc->layer = view;
+    return std::move(desc);
+}
+
 
 }  // namespace wgpu::glfw

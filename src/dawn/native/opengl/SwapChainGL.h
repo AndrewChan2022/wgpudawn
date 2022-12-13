@@ -22,6 +22,7 @@
 namespace dawn::native::opengl {
 
 class Device;
+class Texture;
 
 class SwapChain final : public OldSwapChainBase {
   public:
@@ -31,6 +32,26 @@ class SwapChain final : public OldSwapChainBase {
     ~SwapChain() override;
     TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
     MaybeError OnBeforePresent(TextureViewBase* view) override;
+};
+
+class NewSwapChain final : public NewSwapChainBase {
+  public:
+    NewSwapChain(Device* device, Surface* surface, const SwapChainDescriptor* descriptor);
+    
+    virtual ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
+    // The call to present must destroy the current view's texture so further access to it are
+    // invalid.
+    virtual MaybeError PresentImpl() override;
+
+    // Guaranteed to be called exactly once during the lifetime of the SwapChain. After it is
+    // called no other virtual method can be called.
+    virtual void DetachFromSurfaceImpl() override;
+
+  protected:
+    ~NewSwapChain() override;
+    
+  private:
+    Ref<Texture> mTexture;
 };
 
 }  // namespace dawn::native::opengl

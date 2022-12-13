@@ -858,7 +858,12 @@ MaybeError CommandBuffer::ExecuteRenderPass(BeginRenderPassCmd* renderPass) {
         // at Framebuffer build time (or maybe CommandBuffer build time) so they don't have to
         // be created and destroyed at draw time.
         gl.GenFramebuffers(1, &fbo);
-        gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+        if (renderPass->colorAttachments[0].view.Get() != nullptr) {
+            dawn::native::opengl::TextureView* tv = (dawn::native::opengl::TextureView*)renderPass->colorAttachments[0].view.Get();
+            if (tv->GetHandle() != 0xffffffff) { // swapchain texture
+                gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);  // bugfix: comment for desktop mac/win
+            }
+        }
 
         // Mapping from attachmentSlot to GL framebuffer attachment points. Defaults to zero
         // (GL_NONE).
@@ -1317,6 +1322,9 @@ void DoTexSubImage(const OpenGLFunctions& gl,
                            dataLayout.bytesPerRow / blockInfo.byteSize * blockInfo.width);
             if (texture->GetArrayLayers() == 1 &&
                 texture->GetDimension() == wgpu::TextureDimension::e2D) {
+                if (gl.TexStorage2D == nullptr) {  // bugfix
+                    gl.TexImage2D(target, destination.mipLevel, format.internalFormat, width, height, 0, format.format, format.type, nullptr);
+                }
                 gl.TexSubImage2D(target, destination.mipLevel, x, y, width, height, format.format,
                                  format.type, data);
             } else {

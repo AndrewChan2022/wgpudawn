@@ -264,7 +264,16 @@ ResultOrError<GLuint> ShaderModule::CompileShader(const OpenGLFunctions& gl,
             tintOptions.binding_points = std::move(r.glBindings);
             tintOptions.allow_collisions = true;
 
-            auto result = tint::writer::glsl::Generate(&program, tintOptions, r.entryPointName);
+            tint::writer::glsl::ShaderStage tintStage = tint::writer::glsl::ShaderStage::Vertex;
+            if (r.stage == SingleShaderStage::Vertex) {
+                tintStage = tint::writer::glsl::ShaderStage::Vertex;
+            } else if (r.stage == SingleShaderStage::Fragment) {
+                tintStage = tint::writer::glsl::ShaderStage::Fragment;
+            } else if (r.stage == SingleShaderStage::Compute) {
+                tintStage = tint::writer::glsl::ShaderStage::Compute;
+            }
+            tintStage = static_cast<tint::writer::glsl::ShaderStage>(r.stage);
+            auto result = tint::writer::glsl::Generate(&program, tintOptions, r.entryPointName, tintStage);
             DAWN_INVALID_IF(!result.success, "An error occured while generating GLSL: %s.",
                             result.error);
 

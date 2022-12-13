@@ -17,8 +17,14 @@
 #include "dawn/native/opengl/DeviceGL.h"
 #include "dawn/native/opengl/Forward.h"
 #include "dawn/native/opengl/TextureGL.h"
+#include "dawn/native/opengl/SwapChainAppleGL.h"
+#include "dawn/native/Surface.h"
 
 #include "dawn/dawn_wsi.h"
+
+#if DAWN_PLATFORM_IS(WINDOWS)
+#include <windowsx.h>
+#endif
 
 namespace dawn::native::opengl {
 
@@ -45,6 +51,51 @@ TextureBase* SwapChain::GetNextTextureImpl(const TextureDescriptor* descriptor) 
 
 MaybeError SwapChain::OnBeforePresent(TextureViewBase*) {
     return {};
+}
+
+NewSwapChain::NewSwapChain(Device* device, Surface* surface, const SwapChainDescriptor* descriptor)
+    : NewSwapChainBase(device, surface, descriptor) {
+}
+NewSwapChain::~NewSwapChain() {}
+
+ResultOrError<Ref<TextureViewBase>> NewSwapChain::GetCurrentTextureViewImpl() {
+    printf("GetCurrentTextureViewImpl\n");
+    
+    if (mTexture == nullptr) {
+        TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
+        const TextureDescriptor* descriptor = &textureDesc;
+        GLuint handle = 0xffffffff;
+        Device* device = (dawn::native::opengl::Device *)GetDevice();
+        mTexture = AcquireRef(new Texture(device, descriptor, handle, TextureBase::TextureState::OwnedExternal));
+        //mTexture = Texture::CreateWrapping(ToBackend(GetDevice()), &textureDesc, [*mCurrentDrawable texture]);
+        //texture->InitializeAsWrapping(descriptor, std::move(wrapped));
+    }
+    
+    return mTexture->CreateView();
+}
+MaybeError NewSwapChain::PresentImpl() {
+    //printf("PresentImpl\n");
+
+#if DAWN_PLATFORM_IS(MACOS)
+    macos_present();
+#elif DAWN_PLATFORM_IS(WINDOWS)
+    HWND hwnd = (HWND)GetSurface()->GetHWND();
+    HDC hdc = GetDC(hwnd);
+    SwapBuffers(hdc);
+    ReleaseDC(hwnd, hdc);
+#else
+    printf("only support swapchain for macos/windows\n");
+    ASSERT(false);
+#endif
+    return {};
+}
+void NewSwapChain::DetachFromSurfaceImpl() {
+    printf("DetachFromSurfaceImpl\n");
+    
+    if (mTexture != nullptr) {
+        mTexture->APIDestroy();
+        mTexture = nullptr;
+    }
 }
 
 }  // namespace dawn::native::opengl

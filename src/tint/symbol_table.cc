@@ -66,6 +66,34 @@ std::string SymbolTable::NameFor(const Symbol symbol) const {
     return it->second;
 }
 
+void SymbolTable::renameGLSLFragmentInName() {
+    std::unordered_map<Symbol, std::string> symbol_to_name;
+    for (auto& kv : symbol_to_name_) {
+        auto& k = kv.first;
+        auto name = kv.second;
+        
+        auto pos = name.find("_param_");
+        if (pos != std::string::npos) {
+            name.replace(pos, sizeof("_param_") - 1, "_1_");
+        }
+        symbol_to_name.insert_or_assign(k, name);
+    }
+    symbol_to_name_ = symbol_to_name;
+    
+    std::unordered_map<std::string, Symbol> name_to_symbol;
+    for (auto& kv : name_to_symbol_) {
+        auto name = kv.first;
+        auto& v = kv.second;
+        
+        auto pos = name.find("_param_");
+        if (pos != std::string::npos) {
+            name.replace(pos, sizeof("_param_") - 1, "_1_");
+        }
+        name_to_symbol.insert_or_assign(name, v);
+    }
+    name_to_symbol_ = name_to_symbol;
+}
+
 Symbol SymbolTable::New(std::string prefix /* = "" */) {
     if (prefix.empty()) {
         prefix = "tint_symbol";

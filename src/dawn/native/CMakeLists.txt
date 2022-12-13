@@ -342,6 +342,14 @@ if (DAWN_ENABLE_D3D12)
     target_link_libraries(dawn_native PRIVATE dxguid.lib)
 endif()
 
+if (APPLE)
+    if(DAWN_ENABLE_OPENGL)
+        target_sources(dawn_native PRIVATE
+            "opengl/SwapChainAppleGL.h"
+            "opengl/SwapChainAppleGL.mm"
+        )
+    endif()
+endif()
 if (DAWN_ENABLE_METAL)
     target_sources(dawn_native PRIVATE
         "${DAWN_INCLUDE_DIR}/dawn/native/MetalBackend.h"

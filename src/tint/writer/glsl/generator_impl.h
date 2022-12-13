@@ -79,7 +79,7 @@ class GeneratorImpl : public TextGenerator {
     /// Constructor
     /// @param program the program to generate
     /// @param version the GLSL version to use
-    GeneratorImpl(const Program* program, const Version& version);
+    GeneratorImpl(const Program* program, const Version& version, const ShaderStage& stage);
     ~GeneratorImpl();
 
     /// @returns true on successful generation; false otherwise
@@ -524,6 +524,7 @@ class GeneratorImpl : public TextGenerator {
     bool requires_default_precision_qualifier_ = false;
     bool requires_f16_extension_ = false;
     Version version_;
+    ShaderStage stage_;
 };
 
 }  // namespace tint::writer::glsl

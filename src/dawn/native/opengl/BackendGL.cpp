@@ -26,7 +26,15 @@
 #include "dawn/native/opengl/ContextEGL.h"
 #include "dawn/native/opengl/EGLFunctions.h"
 
+void* g_getproc_void = nullptr;
+
 namespace dawn::native::opengl {
+
+typedef void (*glprocfunc)(void);
+typedef void* (*GetProcFunc)(const char* procname);
+void SetGLGetProc(void* getproc) {
+    g_getproc_void = getproc;
+}
 
 // Implementation of the OpenGL backend's BackendConnection
 
@@ -42,12 +50,13 @@ std::vector<Ref<AdapterBase>> Backend::DiscoverDefaultAdapters() {
 #else
     const char* eglLib = "libEGL.so";
 #endif
-    if (!mLibEGL.Valid() && !mLibEGL.Open(eglLib)) {
+    /*if (!mLibEGL.Valid() && !mLibEGL.Open(eglLib)) {
         return {};
-    }
+    }*/
 
     AdapterDiscoveryOptions options(ToAPI(GetType()));
-    options.getProc =
+    options.getProc = (GetProcFunc)g_getproc_void;
+    /*options.getProc =
         reinterpret_cast<void* (*)(const char*)>(mLibEGL.GetProc("eglGetProcAddress"));
     if (!options.getProc) {
         return {};
@@ -67,7 +76,7 @@ std::vector<Ref<AdapterBase>> Backend::DiscoverDefaultAdapters() {
     EGLContext prevReadSurface = egl.GetCurrentSurface(EGL_READ);
     EGLContext prevContext = egl.GetCurrentContext();
 
-    context->MakeCurrent();
+    context->MakeCurrent();*/
 
     auto result = DiscoverAdapters(&options);
 
@@ -78,7 +87,7 @@ std::vector<Ref<AdapterBase>> Backend::DiscoverDefaultAdapters() {
         adapters.insert(adapters.end(), value.begin(), value.end());
     }
 
-    egl.MakeCurrent(prevDisplay, prevDrawSurface, prevReadSurface, prevContext);
+    //egl.MakeCurrent(prevDisplay, prevDrawSurface, prevReadSurface, prevContext);
 
     return adapters;
 }

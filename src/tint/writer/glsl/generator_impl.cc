@@ -264,8 +264,8 @@ SanitizedResult Sanitize(const Program* in,
     return result;
 }
 
-GeneratorImpl::GeneratorImpl(const Program* program, const Version& version)
-    : TextGenerator(program), version_(version) {}
+GeneratorImpl::GeneratorImpl(const Program* program, const Version& version, const ShaderStage& stage)
+    : TextGenerator(program), version_(version), stage_(stage) {}
 
 GeneratorImpl::~GeneratorImpl() = default;
 
@@ -279,6 +279,11 @@ bool GeneratorImpl::Generate() {
     }
 
     auto helpers_insertion_point = current_buffer_->lines.size();
+    
+    // rename glsl
+    if (this->stage_ == ShaderStage::Fragment && this->version_.major_version == 3 && this->version_.minor_version == 0) {
+        builder_.Symbols().renameGLSLFragmentInName();
+    }
 
     line();
 
@@ -2141,7 +2146,22 @@ bool GeneratorImpl::EmitIOVariable(const sem::GlobalVariable* var) {
     }
 
     auto out = line();
-    EmitAttributes(out, var, decl->attributes);
+    
+    // if version<310, ignore if vertex.out or frag.in
+    // layout(location=0) out vec2 vUV; => out vec2 vUV;
+    bool ignoreLayout = false;
+    if (this->version_.major_version == 3 && this->version_.minor_version == 0) {
+        if (this->stage_ == ShaderStage::Vertex && var->AddressSpace() == ast::AddressSpace::kOut) {
+            ignoreLayout = true;
+        }
+        if (this->stage_ == ShaderStage::Fragment && var->AddressSpace() == ast::AddressSpace::kIn) {
+            ignoreLayout = true;
+        }
+    }
+    if (!ignoreLayout) {
+        EmitAttributes(out, var, decl->attributes);
+    }
+    
     EmitInterpolationQualifiers(out, decl->attributes);
 
     auto name = builder_.Symbols().NameFor(decl->symbol);

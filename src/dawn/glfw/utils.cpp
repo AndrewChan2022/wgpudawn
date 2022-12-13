@@ -46,6 +46,7 @@ wgpu::Surface CreateSurfaceForWindow(const wgpu::Instance& instance, GLFWwindow*
 
 // SetupWindowAndGetSurfaceDescriptorCocoa defined in GLFWUtils_metal.mm
 std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptorCocoa(GLFWwindow* window);
+std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptorCocoaGL(GLFWwindow* window);
 
 std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptor(GLFWwindow* window) {
 #if DAWN_PLATFORM_IS(WINDOWS)
@@ -78,7 +79,8 @@ std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptor(GLFWwind
     { return nullptr; }
 #endif
 #else
-    return nullptr;
+    return SetupWindowAndGetSurfaceDescriptorCocoaGL(window);
+    //return nullptr;
 #endif
 }
 

@@ -32,6 +32,9 @@
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/WireServer.h"
 #include "webgpu/webgpu_glfw.h"
+#include "dawn/utils/WGPUHelpers.h"
+
+#define USE_OPENGL
 
 void PrintDeviceError(WGPUErrorType errorType, const char* message, void*) {
     const char* errorTypeName = "";
@@ -65,6 +68,14 @@ enum class CmdBufType {
     // TODO(cwallez@chromium.org): double terrible cmdbuf
 };
 
+#ifdef USE_OPENGL
+#undef DAWN_ENABLE_BACKEND_METAL
+#undef DAWN_ENABLE_BACKEND_VULKAN
+#define DAWN_ENABLE_BACKEND_DESKTOP_GL
+#else
+#undef DAWN_ENABLE_BACKEND_DESKTOP_GL
+#endif
+
 // Default to D3D12, Metal, Vulkan, OpenGL in that order as D3D12 and Metal are the preferred on
 // their respective platforms, and Vulkan is preferred to OpenGL
 #if defined(DAWN_ENABLE_BACKEND_D3D12)
@@ -81,7 +92,8 @@ static wgpu::BackendType backendType = wgpu::BackendType::OpenGL;
 #error
 #endif
 
-static CmdBufType cmdBufType = CmdBufType::Terrible;
+//static CmdBufType cmdBufType = CmdBufType::Terrible;
+static CmdBufType cmdBufType = CmdBufType::None;
 static std::unique_ptr<dawn::native::Instance> instance;
 static wgpu::SwapChain swapChain;
 
@@ -104,12 +116,25 @@ wgpu::Device CreateCppDawnDevice() {
     }
 
     // Create the test window with no client API.
+#ifdef USE_OPENGL
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    //glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    //glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+#endif
     window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
     if (!window) {
         return wgpu::Device();
     }
+#ifdef USE_OPENGL
+    glfwMakeContextCurrent(window);
+    utils::SetOpenGLGetProcFromGLFW((void*)glfwGetProcAddress);
+#endif
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
 
     instance = std::make_unique<dawn::native::Instance>();
     instance->DiscoverDefaultAdapters();
@@ -140,8 +165,8 @@ wgpu::Device CreateCppDawnDevice() {
     WGPUSwapChainDescriptor swapChainDesc;
     swapChainDesc.usage = WGPUTextureUsage_RenderAttachment;
     swapChainDesc.format = static_cast<WGPUTextureFormat>(GetPreferredSwapChainTextureFormat());
-    swapChainDesc.width = 640;
-    swapChainDesc.height = 480;
+    swapChainDesc.width = width;
+    swapChainDesc.height = height;
     swapChainDesc.presentMode = WGPUPresentMode_Mailbox;
     swapChainDesc.implementation = 0;
     WGPUSwapChain backendSwapChain =
@@ -204,10 +229,13 @@ wgpu::SwapChain GetSwapChain() {
 }
 
 wgpu::TextureView CreateDefaultDepthStencilView(const wgpu::Device& device) {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;
-    descriptor.size.width = 640;
-    descriptor.size.height = 480;
+    descriptor.size.width = width;
+    descriptor.size.height = height;
     descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
@@ -277,7 +305,7 @@ bool InitSample(int argc, const char** argv) {
         fprintf(stderr,
                 "The OpenGL(ES) backend is temporarily not supported for samples. See "
                 "https://crbug.com/dawn/810");
-        return false;
+        //return false;
     }
 
     return true;

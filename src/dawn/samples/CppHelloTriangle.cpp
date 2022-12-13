@@ -106,8 +106,39 @@ void init() {
 
         @fragment fn main(@builtin(position) FragCoord : vec4<f32>)
                               -> @location(0) vec4<f32> {
-            return textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0, 480.0));
+            return textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0*2.0, 480.0*2.0));
         })");
+    
+    /*wgpu::ShaderModule vs2Module = utils::CreateShaderModuleFromGLSL(device, utils::GLSLStage::VERTEX,  R"(
+            #version 450
+            layout(location = 0) in vec4 pos_1;
+        
+            void main() {
+              gl_Position = pos_1;
+              return;
+            }
+        )");
+
+    wgpu::ShaderModule fs2Module = utils::CreateShaderModuleFromGLSL(device, utils::GLSLStage::FRAGMENT, R"(
+            #version 450
+        
+            layout(location = 0) out vec4 value;
+            layout(binding=0) uniform sampler mySampler;
+            layout(binding=1) uniform texture2D textureData;
+            //layout(binding=1) uniform sampler2D mySampler;
+            
+            vec4 tint_symbol(vec4 FragCoord) {
+              //return texture(mySampler, (FragCoord.xy / vec2(640.0f, 480.0f)));
+              //return texture(sampler2D(textureData, mySampler), (FragCoord.xy / vec2(640.0f*2.0f, 480.0f*2.0f)));
+              return vec4(0.0, 0.0, 1.0, 1.0);
+            }
+            
+            void main() {
+              vec4 inner_result = tint_symbol(gl_FragCoord);
+              value = inner_result;
+              return;
+            }
+        )");*/
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {

@@ -295,7 +295,9 @@ void RenderPipeline::ApplyNow(PersistentPipelineState& persistentPipelineState) 
 
     ApplyDepthStencilState(gl, GetDepthStencilState(), &persistentPipelineState);
 
-    gl.SampleMaski(0, GetSampleMask());
+    if (gl.SampleMaski != nullptr) {
+        gl.SampleMaski(0, GetSampleMask());
+    }
     if (IsAlphaToCoverageEnabled()) {
         gl.Enable(GL_SAMPLE_ALPHA_TO_COVERAGE);
     } else {

@@ -174,6 +174,7 @@ MaybeError Device::Initialize(const DeviceDescriptor* descriptor) {
         gl.Enable(GL_FRAMEBUFFER_SRGB);
     }
     gl.Enable(GL_SAMPLE_MASK);
+    gl.Disable(GL_SCISSOR_TEST);
 
     return DeviceBase::Initialize(AcquireRef(new Queue(this, &descriptor->defaultQueue)));
 }
@@ -304,6 +305,8 @@ ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
     Surface* surface,
     NewSwapChainBase* previousSwapChain,
     const SwapChainDescriptor* descriptor) {
+    auto swapChain =  AcquireRef(new NewSwapChain(this, surface, descriptor));
+    return swapChain;
     return DAWN_VALIDATION_ERROR("New swapchains not implemented.");
 }
 ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {

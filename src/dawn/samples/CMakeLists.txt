@@ -12,6 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if (CMAKE_SYSTEM_NAME STREQUAL iOS)
+    add_library(dawn_sample_utils STATIC ${DAWN_PLACEHOLDER_FILE})
+    common_compile_options(dawn_sample_utils)
+    target_sources(dawn_sample_utils PRIVATE
+        "SampleUtils_ios.cpp"
+    )
+
+    target_link_libraries(dawn_sample_utils PUBLIC
+        dawn_internal_config
+        dawncpp
+        dawn_proc
+        dawn_common
+        dawn_native
+        dawn_wire
+        dawn_utils
+
+        OSDependent
+        SPIRV
+        MachineIndependent
+        GenericCodeGen
+        glslang-default-resource-limits
+        OGLCompiler
+        glslang
+    )
+    add_subdirectory(Ch7WGPUTriangle)
+else()
+
 add_library(dawn_sample_utils STATIC ${DAWN_PLACEHOLDER_FILE})
 common_compile_options(dawn_sample_utils)
 target_sources(dawn_sample_utils PRIVATE
@@ -28,6 +55,14 @@ target_link_libraries(dawn_sample_utils PUBLIC
     dawn_wire
     dawn_utils
     glfw
+
+    OSDependent
+    SPIRV
+    MachineIndependent
+    GenericCodeGen
+    glslang-default-resource-limits
+    OGLCompiler
+    glslang
 )
 
 add_executable(CppHelloTriangle "CppHelloTriangle.cpp")
@@ -45,3 +80,5 @@ target_link_libraries(ComputeBoids dawn_sample_utils)
 add_executable(Animometer "Animometer.cpp")
 common_compile_options(Animometer)
 target_link_libraries(Animometer dawn_sample_utils)
+
+endif()

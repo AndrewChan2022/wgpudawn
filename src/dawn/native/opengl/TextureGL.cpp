@@ -145,6 +145,7 @@ void AllocateTexture(const OpenGLFunctions& gl,
                      GLsizei samples,
                      GLuint levels,
                      GLenum internalFormat,
+                     GLenum format,
                      const Extent3D& size) {
     // glTextureView() requires the value of GL_TEXTURE_IMMUTABLE_FORMAT for origtexture to
     // be GL_TRUE, so the storage of the texture must be allocated with glTexStorage*D.
@@ -152,16 +153,30 @@ void AllocateTexture(const OpenGLFunctions& gl,
     switch (target) {
         case GL_TEXTURE_2D_ARRAY:
         case GL_TEXTURE_3D:
-            gl.TexStorage3D(target, levels, internalFormat, size.width, size.height,
+            if (gl.TexStorage3D != nullptr) {
+                gl.TexStorage3D(target, levels, internalFormat, size.width, size.height,
                             size.depthOrArrayLayers);
+            } else {
+                gl.TexImage3D(target, levels, internalFormat, size.width, size.height,
+                              size.depthOrArrayLayers, 0, format, GL_UNSIGNED_BYTE, nullptr);
+            }
             break;
         case GL_TEXTURE_2D:
         case GL_TEXTURE_CUBE_MAP:
-            gl.TexStorage2D(target, levels, internalFormat, size.width, size.height);
+            if (gl.TexStorage2D != nullptr) {
+                gl.TexStorage2D(target, levels, internalFormat, size.width, size.height);
+            } else {
+                gl.TexImage2D(target, levels, internalFormat, size.width, size.height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+            }
+            //printf("glTexImage2D: internalformat:%d format:%d \n", internalFormat, format);
             break;
         case GL_TEXTURE_2D_MULTISAMPLE:
-            gl.TexStorage2DMultisample(target, samples, internalFormat, size.width, size.height,
+            if (gl.TexStorage2DMultisample) {
+                gl.TexStorage2DMultisample(target, samples, internalFormat, size.width, size.height,
                                        true);
+            } else {
+                gl.TexImage2DMultisample(target, samples, internalFormat, size.width, size.height, true);
+            }
             break;
         default:
             UNREACHABLE();
@@ -183,7 +198,7 @@ Texture::Texture(Device* device, const TextureDescriptor* descriptor)
 
     gl.BindTexture(mTarget, mHandle);
 
-    AllocateTexture(gl, mTarget, GetSampleCount(), levels, glFormat.internalFormat, GetSize());
+    AllocateTexture(gl, mTarget, GetSampleCount(), levels, glFormat.internalFormat, glFormat.format, GetSize());
 
     // The texture is not complete if it uses mipmapping and not all levels up to
     // MAX_LEVEL have been defined.
@@ -214,8 +229,9 @@ Texture::Texture(Device* device,
 Texture::~Texture() {}
 
 void Texture::DestroyImpl() {
+    auto curState = GetTextureState();
     TextureBase::DestroyImpl();
-    if (GetTextureState() == TextureState::OwnedInternal) {
+    if (curState == TextureState::OwnedInternal) {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->GetGL();
         gl.DeleteTextures(1, &mHandle);
         mHandle = 0;
@@ -342,7 +358,7 @@ MaybeError Texture::ClearTexture(const SubresourceRange& range,
                 }
             }
 
-            gl.Enable(GL_SCISSOR_TEST);
+            //gl.Enable(GL_SCISSOR_TEST);
             gl.DeleteFramebuffers(1, &framebuffer);
         } else {
             ASSERT(range.aspects == Aspect::Color);
@@ -461,7 +477,7 @@ MaybeError Texture::ClearTexture(const SubresourceRange& range,
                         DoClear();
                     }
 
-                    gl.Enable(GL_SCISSOR_TEST);
+                    //gl.Enable(GL_SCISSOR_TEST);
                     gl.DeleteFramebuffers(1, &framebuffer);
                     gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
                 }
@@ -656,7 +672,8 @@ void TextureView::CopyIfNeeded() {
     if (mHandle == 0) {
         gl.GenTextures(1, &mHandle);
         gl.BindTexture(mTarget, mHandle);
-        AllocateTexture(gl, mTarget, texture->GetSampleCount(), numLevels, GetInternalFormat(),
+        auto& glformt = texture->GetGLFormat();
+        AllocateTexture(gl, mTarget, texture->GetSampleCount(), numLevels, GetInternalFormat(), glformt.format,
                         size);
         mOwnsHandle = true;
     }
@@ -678,6 +695,22 @@ GLenum TextureView::GetInternalFormat() const {
         GetFormat().HasDepthOrStencil() ? GetTexture()->GetFormat() : GetFormat();
     const GLFormat& glFormat = ToBackend(GetDevice())->GetGLFormat(format);
     return glFormat.internalFormat;
+}
+
+// private interface for exchange between opengl and wgpu
+uint32_t getGLTextureId(void* texture) {
+    dawn::native::opengl::Texture* t = static_cast<dawn::native::opengl::Texture*>(texture);
+    return t->GetHandle();
+}
+
+// private interface for exchange between opengl and wgpu
+void* createGLTextureFromID(void* device, void* descriptor, uint32_t handle) {
+    
+    Texture* texture = new Texture((Device*)device,
+                                   (const TextureDescriptor*)descriptor,
+                                   handle,
+                                   Texture::TextureState::OwnedExternal);
+    return texture;
 }
 
 }  // namespace dawn::native::opengl

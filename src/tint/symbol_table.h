@@ -80,6 +80,8 @@ class SymbolTable {
 
     /// @returns the identifier of the Program that owns this symbol table.
     tint::ProgramID ProgramID() const { return program_id_; }
+    
+    void renameGLSLFragmentInName();
 
   private:
     // The value to be associated to the next registered symbol table entry.
