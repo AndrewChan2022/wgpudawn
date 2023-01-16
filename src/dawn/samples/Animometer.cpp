@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <chrono>
 
 #include "dawn/samples/SampleUtils.h"
 
@@ -23,12 +24,21 @@
 #include "dawn/utils/SystemUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
 
+struct StatData {
+    int totalFrameCount{0};
+    uint64_t totalStartTimeUS;
+    int frameCount{0};
+    uint64_t startTimeUS;
+};
+
 wgpu::Device device;
 wgpu::Queue queue;
 wgpu::SwapChain swapchain;
 wgpu::RenderPipeline pipeline;
 wgpu::BindGroup bindGroup;
 wgpu::Buffer ubo;
+wgpu::RenderBundle renderBundle;
+StatData statData;
 
 float RandomFloat(float min, float max) {
     // NOLINTNEXTLINE(runtime/threadsafe_fn)
@@ -36,7 +46,8 @@ float RandomFloat(float min, float max) {
     return zeroOne * (max - min) + min;
 }
 
-constexpr size_t kNumTriangles = 10000;
+constexpr size_t kNumTriangles = 100000;
+constexpr bool  kUseRenderBundles = true;
 
 // Aligned as minUniformBufferOffsetAlignment
 struct alignas(256) ShaderData {
@@ -143,6 +154,23 @@ void init() {
     ubo = device.CreateBuffer(&bufferDesc);
 
     bindGroup = utils::MakeBindGroup(device, bgl, {{0, ubo, 0, sizeof(ShaderData)}});
+    
+    if(kUseRenderBundles) {
+        wgpu::RenderBundleEncoderDescriptor renderBundleDesc;
+        renderBundleDesc.colorFormatsCount = 1;
+        renderBundleDesc.colorFormats = &descriptor.cTargets[0].format;
+        auto renderBundleEncoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        {
+            auto& pass = renderBundleEncoder;
+            pass.SetPipeline(pipeline);
+            for (size_t i = 0; i < kNumTriangles; i++) {
+                uint32_t offset = i * sizeof(ShaderData);
+                pass.SetBindGroup(0, bindGroup, 1, &offset);
+                pass.Draw(3);
+            }
+        }
+        renderBundle = renderBundleEncoder.Finish();
+    }
 }
 
 void frame() {
@@ -159,12 +187,17 @@ void frame() {
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
-        pass.SetPipeline(pipeline);
+        
+        if(kUseRenderBundles) {
+            pass.ExecuteBundles(1, &renderBundle);
+        } else {
+            pass.SetPipeline(pipeline);
 
-        for (size_t i = 0; i < kNumTriangles; i++) {
-            uint32_t offset = i * sizeof(ShaderData);
-            pass.SetBindGroup(0, bindGroup, 1, &offset);
-            pass.Draw(3);
+            for (size_t i = 0; i < kNumTriangles; i++) {
+                uint32_t offset = i * sizeof(ShaderData);
+                pass.SetBindGroup(0, bindGroup, 1, &offset);
+                pass.Draw(3);
+            }
         }
 
         pass.End();
@@ -174,7 +207,20 @@ void frame() {
     queue.Submit(1, &commands);
     swapchain.Present();
     DoFlush();
-    fprintf(stderr, "frame %i\n", f);
+
+    uint64_t end = std::chrono::system_clock::now().time_since_epoch() / std::chrono::microseconds(1);
+    double t = (end - statData.totalStartTimeUS) / 1000000.0;
+    double curt = (end - statData.startTimeUS) / 1000000.0;
+    statData.frameCount++;
+    statData.totalFrameCount++;
+    if (f % 10 == 0) {
+        fprintf(stderr, "frame %i time: %.2f fps %.2f\n", f, t, statData.frameCount / curt);
+    }
+    if (f % 200 == 0) {
+        statData.frameCount = 0;
+        statData.startTimeUS =
+            std::chrono::system_clock::now().time_since_epoch() / std::chrono::microseconds(1);
+    }
 }
 
 int main(int argc, const char* argv[]) {
@@ -183,9 +229,12 @@ int main(int argc, const char* argv[]) {
     }
     init();
 
+    statData.totalStartTimeUS = std::chrono::system_clock::now().time_since_epoch() / std::chrono::microseconds(1);
+    statData.startTimeUS = statData.totalStartTimeUS;
+
     while (!ShouldQuit()) {
-        utils::ScopedAutoreleasePool pool;
+        //utils::ScopedAutoreleasePool pool;
         frame();
-        utils::USleep(16000);
+        //utils::USleep(16000);
     }
 }

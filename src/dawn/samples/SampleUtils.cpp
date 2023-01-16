@@ -129,7 +129,12 @@ wgpu::Device CreateCppDawnDevice() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 #endif
-    window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
+    //window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
+#if defined(__APPLE__)
+    window = glfwCreateWindow(1920/2, 1080/2, "Dawn window", nullptr, nullptr);
+#else
+    window = glfwCreateWindow(1920, 1080, "Dawn window", nullptr, nullptr);
+#endif
     if (!window) {
         return wgpu::Device();
     }
@@ -139,6 +144,7 @@ wgpu::Device CreateCppDawnDevice() {
 #endif
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
+    printf("\nframebuffer size: %d x %d\n", width, height);
 
     instance = std::make_unique<dawn::native::Instance>();
     instance->DiscoverDefaultAdapters();
@@ -152,6 +158,7 @@ wgpu::Device CreateCppDawnDevice() {
                                           wgpu::AdapterProperties properties;
                                           adapter.GetProperties(&properties);
                                           return properties.backendType == backendType;
+                                          //return properties.adapterType == wgpu::AdapterType::DiscreteGPU;
                                       });
         ASSERT(adapterIt != adapters.end());
         backendAdapter = *adapterIt;
