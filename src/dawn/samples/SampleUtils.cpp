@@ -36,6 +36,10 @@
 
 #define USE_OPENGL
 
+#if defined(DAWN_ENABLE_BACKEND_METAL) || defined(DAWN_ENABLE_BACKEND_VULKAN) || defined(DAWN_ENABLE_BACKEND_D3D12)
+#undef USE_OPENGL
+#endif
+
 void PrintDeviceError(WGPUErrorType errorType, const char* message, void*) {
     const char* errorTypeName = "";
     switch (errorType) {

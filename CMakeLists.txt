@@ -257,6 +257,9 @@ else()
   set(TINT_DEFAULT_GLSL OFF)
 endif()
 
+# force glslang even metal/vulkan/d3d12, because input shader is glsl
+set(TINT_DEFAULT_GLSL ON)
+
 option_if_not_defined(TINT_BUILD_SAMPLES "Build samples" ${DAWN_BUILD_SAMPLES})
 option_if_not_defined(TINT_BUILD_DOCS "Build documentation" ON)
 option_if_not_defined(TINT_DOCS_WARN_AS_ERROR "When building documentation, treat warnings as errors" OFF)

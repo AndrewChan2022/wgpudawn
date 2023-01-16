@@ -190,7 +190,9 @@ void SetOpenGLGetProcFromInside() {
 }
 
 void SetOpenGLGetProcFromGLFW(void* getproc) {
+#if defined(DAWN_ENABLE_BACKEND_OPENGLES) || defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
     dawn::native::opengl::SetGLGetProc(getproc);
+#endif
 }
 
 bool WGPUInitWithGetProc(void* getproc) {

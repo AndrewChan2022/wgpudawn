@@ -348,7 +348,8 @@ void NewSwapChainBase::APIPresent() {
         return;
     }
 
-#if DAWN_PLATFORM_IS(MACOS) || DAWN_PLATFORM_IS(WINDOWS)
+// only desktop macos/windows go this class
+#if (DAWN_PLATFORM_IS(MACOS) || DAWN_PLATFORM_IS(WINDOWS)) && defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
 #else
     ASSERT(mCurrentTextureView->GetTexture()->GetTextureState() ==
            TextureBase::TextureState::Destroyed);
