@@ -233,7 +233,7 @@ int main(int argc, const char* argv[]) {
     statData.startTimeUS = statData.totalStartTimeUS;
 
     while (!ShouldQuit()) {
-        //utils::ScopedAutoreleasePool pool;
+        utils::ScopedAutoreleasePool pool;
         frame();
         //utils::USleep(16000);
     }

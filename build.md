@@ -9,9 +9,11 @@
   - [build for ios from ninja](#build-for-ios-from-ninja)
   - [build for android](#build-for-android)
   - [build for macos/linux/windows](#build-for-macoslinuxwindows)
+  - [build for macos xcode](#build-for-macos-xcode)
 - [build options](#build-options)
   - [backend options](#backend-options)
 - [demo](#demo)
+- [warning](#warning)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -186,6 +188,10 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
     or
     ./collection.sh out/Release Linux
 
+## build for macos xcode
+
+    cmake .. -GXcode  -DCMAKE_BUILD_TYPE=Release -DONLY_METAL=1
+
 # build options
 
 ## backend options
@@ -208,3 +214,15 @@ https://dawn.googlesource.com/dawn/+/HEAD/docs/building.md
     macos/linux/windows: cpptriangle
     android demo: no now
 
+# warning
+
+```cpp
+// because metal use MRC backend, so need add utils::ScopedAutoreleasePool object every frame:
+{   
+    utils::ScopedAutoreleasePool pool;
+    frameRender();
+}
+
+// for MRC, use ScopedAutoreleasePool.mm file, else use ScopedAutoreleasePool.cpp file
+
+```

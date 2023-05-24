@@ -20,7 +20,6 @@ target_sources(dawn_utils PRIVATE
     "ComboRenderPipelineDescriptor.cpp"
     "ComboRenderPipelineDescriptor.h"
     "PlatformDebugLogger.h"
-    "ScopedAutoreleasePool.cpp"
     "ScopedAutoreleasePool.h"
     "SystemUtils.cpp"
     "SystemUtils.h"
@@ -42,6 +41,15 @@ if (APPLE)
     target_sources(dawn_utils PRIVATE
         "WGPUAppleHelpers.mm"
         "WGPUAppleHelpers.h"
+    )
+endif()
+if (DAWN_ENABLE_METAL)
+    target_sources(dawn_utils PRIVATE
+        "ScopedAutoreleasePool.mm"
+    )
+else()
+    target_sources(dawn_utils PRIVATE
+        "ScopedAutoreleasePool.cpp"
     )
 endif()
 target_link_libraries(dawn_utils

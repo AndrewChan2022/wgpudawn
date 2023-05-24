@@ -25,6 +25,7 @@ wgpu::Device device;
 
 wgpu::Buffer indexBuffer;
 wgpu::Buffer vertexBuffer;
+wgpu::Buffer uboBuffer;
 
 wgpu::Texture texture;
 wgpu::Sampler sampler;
@@ -34,6 +35,7 @@ wgpu::SwapChain swapchain;
 wgpu::TextureView depthStencilView;
 wgpu::RenderPipeline pipeline;
 wgpu::BindGroup bindGroup;
+wgpu::BindGroup bindGroup1;
 
 void initBuffers() {
     static const uint32_t indexData[3] = {
@@ -49,6 +51,13 @@ void initBuffers() {
     };
     vertexBuffer = utils::CreateBufferFromData(device, vertexData, sizeof(vertexData),
                                                wgpu::BufferUsage::Vertex);
+    
+    struct Constants {
+        float a;
+    };
+    Constants u;
+    u.a = 0.01f;
+    uboBuffer = utils::CreateBufferFromData(device, (const void*)&u, sizeof(u), wgpu::BufferUsage::Uniform);
 }
 
 void initTextures() {
@@ -95,9 +104,16 @@ void init() {
     initTextures();
 
     wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+        struct Constants {
+            a : f32,
+        };
+        @group(1) @binding(0) var<uniform> c : Constants;
+        
         @vertex fn main(@location(0) pos : vec4<f32>)
                             -> @builtin(position) vec4<f32> {
-            return pos;
+            var opos: vec4<f32>  = pos;
+            opos.x = opos.x + c.a;
+            return opos;
         })");
 
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
@@ -145,13 +161,20 @@ void init() {
                     {0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering},
                     {1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float},
                 });
+    
+    auto bgl1 = utils::MakeBindGroupLayout(
+        device, {
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                });
 
-    wgpu::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
+    
+    //std::vector<wgpu::BindGroupLayout> bgls = {bgl, bgl1};
+    //wgpu::PipelineLayout pl = utils::MakePipelineLayout(device, bgls);
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
     utils::ComboRenderPipelineDescriptor descriptor;
-    descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
+    descriptor.layout = utils::MakePipelineLayout(device, {bgl, bgl1});
     descriptor.vertex.module = vsModule;
     descriptor.vertex.bufferCount = 1;
     descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
@@ -166,6 +189,7 @@ void init() {
     wgpu::TextureView view = texture.CreateView();
 
     bindGroup = utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, view}});
+    bindGroup1 = utils::MakeBindGroup(device, bgl1, {{0, uboBuffer}});
 }
 
 struct {
@@ -187,6 +211,7 @@ void frame() {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
+        pass.SetBindGroup(1, bindGroup1);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(3);
