@@ -52,6 +52,7 @@ MaybeError CommandRecordingContext::PrepareNextCommandBuffer(id<MTLCommandQueue>
     // The autorelease pool may drain before the command buffer is submitted. Retain so it stays
     // alive.
     mCommands = AcquireNSPRef([[queue commandBuffer] retain]);
+    //mCommands = AcquireNSPRef([queue commandBuffer]); // remove retain
     if (mCommands == nil) {
         return DAWN_INTERNAL_ERROR("Failed to allocate an MTLCommandBuffer");
     }
@@ -82,6 +83,7 @@ id<MTLBlitCommandEncoder> CommandRecordingContext::BeginBlit(MTLBlitPassDescript
     // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
     // draining from under us.
     mBlit.Acquire([[*mCommands blitCommandEncoderWithDescriptor:descriptor] retain]);
+    //mBlit.Acquire([*mCommands blitCommandEncoderWithDescriptor:descriptor]); // remove retain
     return mBlit.Get();
 }
 
@@ -95,6 +97,7 @@ id<MTLBlitCommandEncoder> CommandRecordingContext::EnsureBlit() {
         // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
         // draining from under us.
         mBlit.Acquire([[*mCommands blitCommandEncoder] retain]);
+        //mBlit.Acquire([*mCommands blitCommandEncoder]);  // remove retain
     }
     return mBlit.Get();
 }
@@ -118,6 +121,7 @@ id<MTLComputeCommandEncoder> CommandRecordingContext::BeginCompute() {
     // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
     // draining from under us.
     mCompute.Acquire([[*mCommands computeCommandEncoder] retain]);
+    //mCompute.Acquire([*mCommands computeCommandEncoder]); // remove retain
     return mCompute.Get();
 }
 
@@ -132,6 +136,7 @@ id<MTLComputeCommandEncoder> CommandRecordingContext::BeginCompute(
     // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
     // draining from under us.
     mCompute.Acquire([[*mCommands computeCommandEncoderWithDescriptor:descriptor] retain]);
+    //mCompute.Acquire([*mCommands computeCommandEncoderWithDescriptor:descriptor]); // remove retain
     return mCompute.Get();
 }
 
@@ -154,6 +159,7 @@ id<MTLRenderCommandEncoder> CommandRecordingContext::BeginRender(
     // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
     // draining from under us.
     mRender.Acquire([[*mCommands renderCommandEncoderWithDescriptor:descriptor] retain]);
+    //mRender.Acquire([*mCommands renderCommandEncoderWithDescriptor:descriptor]); // remove retain
     return mRender.Get();
 }
 

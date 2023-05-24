@@ -76,13 +76,17 @@ class SwapChainImplMTL {
     }
 
     DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture) {
+        //[mCurrentDrawable release];
         [mCurrentDrawable release];
         mCurrentDrawable = [mLayer nextDrawable];
         [mCurrentDrawable retain];
+        //[mCurrentDrawable retain];
 
+        //[mCurrentTexture release];
         [mCurrentTexture release];
         mCurrentTexture = mCurrentDrawable.texture;
         [mCurrentTexture retain];
+        //[mCurrentTexture retain];
 
         nextTexture->texture.ptr = reinterpret_cast<void*>(mCurrentTexture);
 
